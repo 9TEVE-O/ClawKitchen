@@ -1,38 +1,45 @@
-# Claw Kitchen
+# ClawKitchen
 
-Local-first UI companion for **ClawRecipes** (OpenClaw Recipes plugin).
+ClawKitchen is a local-first UI companion for ClawRecipes and OpenClaw recipe workflows. It gives agent and team scaffolding a cleaner operational surface: manage recipes, inspect workspaces, run local orchestration flows, and keep file-first team systems easier to use.
 
-## Prerequisites
-- OpenClaw installed and on PATH (`openclaw`)
-- ClawRecipes plugin installed/linked so `openclaw recipes ...` works
+## What it demonstrates
+
+- Local-first product thinking for agent workflow management
+- UI layer for recipe, team, and workspace operations
+- OpenClaw plugin integration with a practical install path
+- Tailscale-friendly remote access with explicit authentication requirements
 
 ---
 
-## Run as an OpenClaw plugin (@jiggai/kitchen)
+## Prerequisites
+
+- OpenClaw installed and available on PATH as `openclaw`
+- ClawRecipes installed or linked so `openclaw recipes ...` works
+
+---
+
+## Run as an OpenClaw plugin
 
 ClawKitchen can be loaded as an OpenClaw plugin so it runs locally on the orchestrator.
 
-### 1) Install / load the plugin
+### 1. Install or load the plugin
 
-**Recommended (end users):** install the published plugin package (ships with a prebuilt `.next/` so you don’t run any npm commands).
+Recommended for end users: install the published plugin package. It ships with a prebuilt `.next/` directory so you do not need to run npm commands.
 
 ```bash
 openclaw plugins install @jiggai/kitchen
 
-# If you use a plugin allowlist (plugins.allow), you must explicitly trust it:
+# If you use a plugin allowlist, explicitly trust it:
 openclaw config get plugins.allow --json
-# then add "kitchen" (and "recipes") and set it back, e.g.
 openclaw config set plugins.allow --json '["memory-core","telegram","recipes","kitchen"]'
 ```
 
-Edit your OpenClaw config (`~/.openclaw/openclaw.json`) and add:
+Edit `~/.openclaw/openclaw.json` and add:
 
 ```json5
 {
   "plugins": {
-    // If you use plugins.allow, ensure kitchen is allowed.
     "allow": ["kitchen", "recipes"],
-
     "entries": {
       "kitchen": {
         "enabled": true,
@@ -50,18 +57,16 @@ Edit your OpenClaw config (`~/.openclaw/openclaw.json`) and add:
 ```
 
 Notes:
-- Plugin id is `kitchen` (from `openclaw.plugin.json`).
-- If `plugins.allow` is present, it **must** include `kitchen` or config validation will fail.
+- Plugin id is `kitchen` from `openclaw.plugin.json`.
+- If `plugins.allow` is present, it must include `kitchen` or config validation will fail.
 
-### 2) Restart the gateway
-
-Config changes require a gateway restart:
+### 2. Restart the gateway
 
 ```bash
 openclaw gateway restart
 ```
 
-### 3) Confirm Kitchen is running
+### 3. Confirm Kitchen is running
 
 ```bash
 openclaw kitchen status
@@ -69,30 +74,28 @@ openclaw kitchen open
 ```
 
 Then open:
-- http://127.0.0.1:7777
+
+```text
+http://127.0.0.1:7777
+```
 
 ---
 
-## Tailscale / remote access (recommended)
+## Tailscale / remote access
 
-This is intended for **Tailscale-only** remote access.
+This is intended for Tailscale-only remote access.
 
-### 1) Pick an auth token
+### 1. Pick an auth token
 
-Use a long random string. Examples:
+Use a long random string.
 
 ```bash
-# base64 token
 openssl rand -base64 32
-
-# hex token
 openssl rand -hex 32
-
-# node (URL-safe)
 node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 ```
 
-### 2) Bind to your Tailscale IP
+### 2. Bind to your Tailscale IP
 
 Update OpenClaw config:
 
@@ -115,31 +118,38 @@ Update OpenClaw config:
 ```
 
 Restart:
+
 ```bash
 openclaw gateway restart
 ```
 
-### 3) Connect
+### 3. Connect
 
 Open in a browser:
-- `http://<tailscale-ip>:7777`
+
+```text
+http://<tailscale-ip>:7777
+```
 
 Authentication:
-- HTTP Basic Auth
-  - username: `kitchen`
-  - password: `<token>`
 
-Safety rule:
-- If `host` is not localhost, `authToken` is required.
+- username: `kitchen`
+- password: `<token>`
+
+Safety rule: if `host` is not localhost, `authToken` is required.
 
 ---
 
 ## Goals
+
 See [docs/GOALS.md](docs/GOALS.md).
 
+---
+
 ## Notes
-- This app shells out to `openclaw` on the same machine (local-first by design).
-- Phase 2 will add marketplace/search/publish flows.
+
+- This app shells out to `openclaw` on the same machine.
+- Phase 2 will add marketplace, search, and publish flows.
 
 ---
 
@@ -147,18 +157,23 @@ See [docs/GOALS.md](docs/GOALS.md).
 
 ### Stop Kitchen
 
-Kitchen runs in-process with the OpenClaw Gateway. The supported way to stop it is to disable the plugin and restart the gateway:
+Kitchen runs in-process with the OpenClaw Gateway. The supported way to stop it is to disable the plugin and restart the gateway.
 
 ```bash
 openclaw plugins disable kitchen
 openclaw gateway restart
 ```
 
-(You can re-enable it later with `openclaw plugins enable kitchen` and another gateway restart.)
+Re-enable later with:
 
-### 500 errors for `/_next/static/chunks/*.js` (broken styles / blank UI)
+```bash
+openclaw plugins enable kitchen
+openclaw gateway restart
+```
 
-If you see 500s when loading Next static chunk files (for example `/_next/static/chunks/<hash>.js`), it usually means Kitchen is running with `dev: false` but the local `.next/` build output is missing or out of date.
+### 500 errors for Next static chunks
+
+If you see 500 errors for `/_next/static/chunks/*.js`, Kitchen is likely running with `dev: false` but the local `.next/` build output is missing or out of date.
 
 Fix:
 
